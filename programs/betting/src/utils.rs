@@ -32,3 +32,17 @@ pub fn sys_create_account<'a>(
 
     Ok(())
 }
+
+#[inline(always)]
+pub fn sys_transfer_unchecked<'a>(
+    from: &AccountInfo<'a>,
+    to: &AccountInfo<'a>,
+    lamports: u64,
+) -> Result<()> {
+    invoke(
+        &system_instruction::transfer(from.key, to.key, lamports), 
+        &[from.clone(), to.clone()],
+    )?;
+
+    Ok(())
+}

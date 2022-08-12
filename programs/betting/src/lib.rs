@@ -22,7 +22,7 @@ pub mod betting {
         _ctx.accounts.process(start, end, *_ctx.bumps.get("escrow").unwrap())
     }
 
-    pub fn bet(_ctx: Context<Bet>, chosen: Winner) -> Result<()> {
-        _ctx.accounts.process(chosen)
+    pub fn bet(_ctx: Context<Bet>, chosen: Winner, amount: u64) -> Result<()> {
+        _ctx.accounts.process(chosen, amount)
     }
 }

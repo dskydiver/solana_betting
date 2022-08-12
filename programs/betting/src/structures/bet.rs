@@ -1,14 +1,18 @@
-use crate::state::{UserBetting, Battle};
+use crate::state::{Battle, UserBetting};
 use crate::utils;
 
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
 pub struct Bet<'info> {
-  #[account(mut)]
-  pub authority: Signer<'info>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
 
-  #[account(
+    /// CHECK: it's alright
+    // #[account(mut)]
+    pub admin: AccountInfo<'info>,
+
+    #[account(
     init,
     seeds = [
       utils::BET_SEED.as_ref(),
@@ -17,15 +21,24 @@ pub struct Bet<'info> {
     bump,
     payer = authority,
     space = 8 + core::mem::size_of::<UserBetting>(),
-  )]
-  pub bet: Box<Account<'info, UserBetting>>,
+    )]
+    pub user_betting: Account<'info, UserBetting>,
 
-  #[account(
+    #[account(
     mut,
-    constraint = battle.key() == bet.battle
-  )]
-  pub battle: Box<Account<'info, Battle>>,
+    constraint = battle.authority == admin.key()
+    )]
+    pub battle: Account<'info, Battle>,
 
-  pub rent_sysvar: Sysvar<'info, Rent>,
-  pub system_program: Program<'info, System>,
+    /// CHECK: it's alright
+    #[account(
+      mut,
+      seeds = [utils::ESCROW_SEED.as_ref()],
+      bump,
+    )]
+    pub escrow: AccountInfo<'info>,
+
+    pub clock_sysvar: Sysvar<'info, Clock>,
+
+    pub system_program: Program<'info, System>,
 }

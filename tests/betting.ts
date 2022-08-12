@@ -23,6 +23,11 @@ const sleep = (ms: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+enum Winner {
+  Left,
+  Right,
+}
+
 describe("betting", () => {
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
@@ -32,22 +37,47 @@ describe("betting", () => {
   it("Is initialized!", async () => {
     // Add your test here.
     const provider = anchor.AnchorProvider.env();
-    const signer1 = Keypair.fromSecretKey(Uint8Array.from(keypair1));
-    const signer2 = Keypair.fromSecretKey(Uint8Array.from(keypair2));
-    const signer3 = Keypair.fromSecretKey(Uint8Array.from(keypair3));
+    // const signer1 = Keypair.fromSecretKey(Uint8Array.from(keypair1));
+    // const signer2 = Keypair.fromSecretKey(Uint8Array.from(keypair2));
+    // const signer3 = Keypair.fromSecretKey(Uint8Array.from(keypair3));
 
-    let [battlePDA,] = await PublicKey.findProgramAddress(
-      [
-        Buffer.from("battle"),
-        signer1.publicKey.toBuffer(),
-      ],
+    let signer1 = Keypair.generate();
+    let signer2 = Keypair.generate();
+    let signer3 = Keypair.generate();
+
+    const AIRDROP_AMOUNT = 10000000000;
+
+    await provider.connection.confirmTransaction(
+      await provider.connection.requestAirdrop(
+        signer1.publicKey,
+        AIRDROP_AMOUNT
+      ),
+      "confirmed"
+    );
+    await provider.connection.confirmTransaction(
+      await provider.connection.requestAirdrop(
+        signer2.publicKey,
+        AIRDROP_AMOUNT
+      ),
+      "confirmed"
+    );
+    await provider.connection.confirmTransaction(
+      await provider.connection.requestAirdrop(
+        signer3.publicKey,
+        AIRDROP_AMOUNT
+      ),
+      "confirmed"
+    );
+
+    let [battlePDA] = await PublicKey.findProgramAddress(
+      [Buffer.from("battle"), signer1.publicKey.toBuffer()],
       program.programId
     );
     console.log("battlePDA = ", battlePDA.toBase58());
 
-    let [escrowPDA,] = await PublicKey.findProgramAddress(
+    let [escrowPDA] = await PublicKey.findProgramAddress(
       [Buffer.from("escrow")],
-      program.programId,
+      program.programId
     );
 
     let slot = await provider.connection.getSlot("finalized");
@@ -63,9 +93,31 @@ describe("betting", () => {
           rentSysvar: SYSVAR_RENT_PUBKEY,
           systemProgram: SystemProgram.programId,
         },
+        signers: [signer1],
       })
     );
 
-    
+    let [userBettingPDA] = await PublicKey.findProgramAddress(
+      [Buffer.from("bet"), signer2.publicKey.toBuffer()],
+      program.programId
+    );
+    console.log("userBettingPDA = ", userBettingPDA.toBase58());
+
+    let left = {left: true};
+
+    await provider.connection.confirmTransaction(
+      await program.rpc.bet(left, new BN(1000000000), {
+        accounts: {
+          authority: signer2.publicKey,
+          admin: signer1.publicKey,
+          userBetting: userBettingPDA,
+          battle: battlePDA,
+          escrow: escrowPDA,
+          clockSysvar: SYSVAR_CLOCK_PUBKEY,
+          systemProgram: SystemProgram.programId,
+        },
+        signers: [signer2],
+      })
+    );
   });
 });
