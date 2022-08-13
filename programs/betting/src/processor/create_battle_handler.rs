@@ -1,4 +1,4 @@
-use crate::{error, id, structures::CreateBattle, utils};
+use crate::{id, structures::CreateBattle, utils};
 
 use anchor_lang::{prelude::*};
 

@@ -9,15 +9,15 @@ pub struct CreateBattle<'info> {
     pub authority: Signer<'info>,
 
     #[account{
-    init,
-    seeds = [
-      utils::BATTLE_SEED.as_ref(),
-      authority.key().as_ref(),
-    ],
-    bump,
-    payer = authority,
-    space = 8 + core::mem::size_of::<Battle>(),
-  }]
+      init,
+      seeds = [
+        utils::BATTLE_SEED.as_ref(),
+        authority.key().as_ref(),
+      ],
+      bump,
+      payer = authority,
+      space = 8 + core::mem::size_of::<Battle>(),
+    }]
     pub battle: Box<Account<'info, Battle>>,
 
     /// CHECK: it's alright

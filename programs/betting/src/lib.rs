@@ -7,6 +7,7 @@ pub mod utils;
 use structures::{
     create_battle::*,
     bet::*,
+    finalize::*,
 };
 use utils::Winner;
 
@@ -24,5 +25,9 @@ pub mod betting {
 
     pub fn bet(_ctx: Context<Bet>, chosen: Winner, amount: u64) -> Result<()> {
         _ctx.accounts.process(chosen, amount)
+    }
+
+    pub fn finalize(_ctx: Context<Finalize>) -> Result<()> {
+        _ctx.accounts.process()
     }
 }

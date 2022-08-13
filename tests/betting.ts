@@ -103,7 +103,7 @@ describe("betting", () => {
     );
     console.log("userBettingPDA = ", userBettingPDA.toBase58());
 
-    let left = {left: true};
+    let left = { left: true };
 
     await provider.connection.confirmTransaction(
       await program.rpc.bet(left, new BN(1000000000), {
@@ -119,5 +119,20 @@ describe("betting", () => {
         signers: [signer2],
       })
     );
+
+    await provider.connection.confirmTransaction(
+      await program.rpc.finalize({
+        accounts: {
+          authority: signer1.publicKey,
+          battle: battlePDA,
+          clockSysvar: SYSVAR_CLOCK_PUBKEY,
+          systemProgram: SystemProgram.programId,
+        },
+        signers: [signer1],
+      })
+    );
+
+    let battle = await program.account.battle.fetch(battlePDA);
+    console.log("battle winner = ", battle.winner);
   });
 });
