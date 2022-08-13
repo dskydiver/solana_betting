@@ -16,6 +16,10 @@ impl<'info> Bet<'info> {
             return Err(error::ErrorCode::BattleFinished.into());
         }
 
+        if amount == 0 {
+            return Err(error::ErrorCode::ZeroAmount.into());
+        }
+
         self.user_betting.authority = self.authority.key().clone();
         self.user_betting.battle = self.battle.key().clone();
         self.user_betting.amount = amount;

@@ -23,10 +23,13 @@ pub struct CreateBattle<'info> {
     /// CHECK: it's alright
     #[account(
       mut,
-      seeds = [utils::ESCROW_SEED.as_ref()],
+      seeds = [
+        utils::ESCROW_SEED.as_ref(),
+        authority.key().as_ref(),
+      ],
       bump,
     )]
-    pub escrow: UncheckedAccount<'info>,
+    pub escrow: AccountInfo<'info>,
 
     pub rent_sysvar: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>,

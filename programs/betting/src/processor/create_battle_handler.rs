@@ -1,9 +1,9 @@
-use crate::{id, structures::CreateBattle, utils};
+use crate::{structures::CreateBattle, utils};
 
 use anchor_lang::{prelude::*};
 
 impl<'info> CreateBattle<'info> {
-    pub fn process(&mut self, start: i64, end: i64, escrow_bump: u8) -> Result<()> {
+    pub fn process(&mut self, start: i64, end: i64, id: &Pubkey, escrow_bump: u8) -> Result<()> {
         self.battle.authority = self.authority.key().clone();
         self.battle.start = start;
         self.battle.end = end;
@@ -15,10 +15,11 @@ impl<'info> CreateBattle<'info> {
             &self.escrow.to_account_info(),
             self.rent_sysvar.minimum_balance(utils::ORDER_ESCROW_NATIVE_SIZE),
             utils::ORDER_ESCROW_NATIVE_SIZE,
-            &id(),
+            id,
             &[
                 utils::ESCROW_SEED.as_ref(),
-                &[escrow_bump]
+                self.authority.key().as_ref(),
+                &[escrow_bump],
             ],
         )?;
 

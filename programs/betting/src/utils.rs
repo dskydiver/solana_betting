@@ -1,5 +1,3 @@
-use std::slice::Windows;
-
 use anchor_lang::{
     prelude::*,
     solana_program::{program::invoke, program::invoke_signed, system_instruction},
@@ -94,6 +92,9 @@ pub fn delete_account<'a>(target: &AccountInfo<'a>, receiver: &AccountInfo<'a>) 
     Ok(())
 }
 
+// one simple RNG(random number generator)
+// it chooses winner according to the left and right balance.
+// the more the balance, the more chance to be chosen
 #[inline(always)]
 pub fn choose(left: u64, right: u64, seed: u64) -> Winner {
     let a : u64 = 1103515245;
@@ -101,6 +102,7 @@ pub fn choose(left: u64, right: u64, seed: u64) -> Winner {
     let m : u64 = 2 ^ 32;
     let x = (a * seed + c) % m;
 
+    // checks if the x is between 0 and left (choose left) or between left and left + right (choose right)
     if (left + right) * x / m < left {
         Winner::Left
     } else {

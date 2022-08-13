@@ -37,37 +37,40 @@ describe("betting", () => {
   it("Is initialized!", async () => {
     // Add your test here.
     const provider = anchor.AnchorProvider.env();
-    // const signer1 = Keypair.fromSecretKey(Uint8Array.from(keypair1));
-    // const signer2 = Keypair.fromSecretKey(Uint8Array.from(keypair2));
-    // const signer3 = Keypair.fromSecretKey(Uint8Array.from(keypair3));
+    // for devnet signers
+    const signer1 = Keypair.fromSecretKey(Uint8Array.from(keypair1));
+    const signer2 = Keypair.fromSecretKey(Uint8Array.from(keypair2));
+    const signer3 = Keypair.fromSecretKey(Uint8Array.from(keypair3));
 
-    let signer1 = Keypair.generate();
-    let signer2 = Keypair.generate();
-    let signer3 = Keypair.generate();
+    // for testnet signers
+    // let signer1 = Keypair.generate();
+    // let signer2 = Keypair.generate();
+    // let signer3 = Keypair.generate();
 
     const AIRDROP_AMOUNT = 10000000000;
 
-    await provider.connection.confirmTransaction(
-      await provider.connection.requestAirdrop(
-        signer1.publicKey,
-        AIRDROP_AMOUNT
-      ),
-      "confirmed"
-    );
-    await provider.connection.confirmTransaction(
-      await provider.connection.requestAirdrop(
-        signer2.publicKey,
-        AIRDROP_AMOUNT
-      ),
-      "confirmed"
-    );
-    await provider.connection.confirmTransaction(
-      await provider.connection.requestAirdrop(
-        signer3.publicKey,
-        AIRDROP_AMOUNT
-      ),
-      "confirmed"
-    );
+    // local test airdrop
+    // await provider.connection.confirmTransaction(
+    //   await provider.connection.requestAirdrop(
+    //     signer1.publicKey,
+    //     AIRDROP_AMOUNT
+    //   ),
+    //   "confirmed"
+    // );
+    // await provider.connection.confirmTransaction(
+    //   await provider.connection.requestAirdrop(
+    //     signer2.publicKey,
+    //     AIRDROP_AMOUNT
+    //   ),
+    //   "confirmed"
+    // );
+    // await provider.connection.confirmTransaction(
+    //   await provider.connection.requestAirdrop(
+    //     signer3.publicKey,
+    //     AIRDROP_AMOUNT
+    //   ),
+    //   "confirmed"
+    // );
 
     let [battlePDA] = await PublicKey.findProgramAddress(
       [Buffer.from("battle"), signer1.publicKey.toBuffer()],
@@ -76,7 +79,7 @@ describe("betting", () => {
     console.log("battlePDA = ", battlePDA.toBase58());
 
     let [escrowPDA] = await PublicKey.findProgramAddress(
-      [Buffer.from("escrow")],
+      [Buffer.from("escrow"), signer1.publicKey.toBuffer()],
       program.programId
     );
 
@@ -84,8 +87,9 @@ describe("betting", () => {
     let time = await provider.connection.getBlockTime(slot);
     console.log("time = ", time);
 
+    // create battle
     await provider.connection.confirmTransaction(
-      await program.rpc.createBattle(new BN(time), new BN(time + 10), {
+      await program.rpc.createBattle(new BN(time), new BN(time + 100), {
         accounts: {
           authority: signer1.publicKey,
           battle: battlePDA,
@@ -105,6 +109,7 @@ describe("betting", () => {
 
     let left = { left: true };
 
+    // signer2 bet on left with 2 sol
     await provider.connection.confirmTransaction(
       await program.rpc.bet(left, new BN(2000000000), {
         accounts: {
@@ -128,6 +133,7 @@ describe("betting", () => {
 
     let right = { right: true };
 
+    // signer3 bet on right with 1 sol
     await provider.connection.confirmTransaction(
       await program.rpc.bet(right, new BN(1000000000), {
         accounts: {
@@ -143,6 +149,7 @@ describe("betting", () => {
       })
     );
 
+    // admin(signer1) finalizes the battle (rng)
     await provider.connection.confirmTransaction(
       await program.rpc.finalize({
         accounts: {
@@ -156,8 +163,17 @@ describe("betting", () => {
     );
 
     let battle = await program.account.battle.fetch(battlePDA);
-    console.log("battle winner = ", battle.winner);
+    console.log(
+      "battle winner = ",
+      battle.winner,
+      battle.leftPool.toString(),
+      battle.rightPool.toString()
+    );
 
+    let escrowbal = await provider.connection.getBalance(escrowPDA);
+    console.log("escrowbal = ", escrowbal);
+
+    // signer2 claims reward (this deletes user's betting account and distribute the reward to the team(==admin==signer1))
     await provider.connection.confirmTransaction(
       await program.rpc.claim({
         accounts: {
@@ -169,12 +185,15 @@ describe("betting", () => {
           clockSysvar: SYSVAR_CLOCK_PUBKEY,
           systemProgram: SystemProgram.programId,
         },
-        signers: [signer2]
+        signers: [signer2],
       })
     );
 
-    console.log("left passed")
+    console.log("left passed");
+    escrowbal = await provider.connection.getBalance(escrowPDA);
+    console.log("escrowbal = ", escrowbal);
 
+    // signer3 claims reward (only deletes the betting account, no reward)
     await provider.connection.confirmTransaction(
       await program.rpc.claim({
         accounts: {
@@ -189,5 +208,7 @@ describe("betting", () => {
         signers: [signer3],
       })
     );
+    escrowbal = await provider.connection.getBalance(escrowPDA);
+    console.log("escrowbal = ", escrowbal);
   });
 });

@@ -14,14 +14,14 @@ use utils::Winner;
 
 use anchor_lang::prelude::*;
 
-declare_id!("Erk5aovZ7Hd3RCn5XuwvqUfD5LdTKHq14tswLN2wVyuA");
+declare_id!("Ch9LB7Yawyz5PJ9A88hzWZV2z87ZjrxAcFjBqeUs28C6");
 
 #[program]
 pub mod betting {
     use super::*;
 
     pub fn create_battle(_ctx: Context<CreateBattle>, start: i64, end: i64) -> Result<()> {
-        _ctx.accounts.process(start, end, *_ctx.bumps.get("escrow").unwrap())
+        _ctx.accounts.process(start, end, _ctx.program_id, *_ctx.bumps.get("escrow").unwrap())
     }
 
     pub fn bet(_ctx: Context<Bet>, chosen: Winner, amount: u64) -> Result<()> {

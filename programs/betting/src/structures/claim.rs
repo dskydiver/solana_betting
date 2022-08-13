@@ -9,7 +9,7 @@ pub struct Claim<'info> {
     pub authority: Signer<'info>,
 
     /// CHECK: it's alright
-    // #[account(mut)]
+    #[account(mut)]
     pub admin: AccountInfo<'info>,
 
     #[account(
@@ -22,12 +22,15 @@ pub struct Claim<'info> {
       mut,
       constraint = battle.authority == admin.key()
     )]
-    pub battle: Account<'info, Battle>,
+    pub battle: Box<Account<'info, Battle>>,
 
     /// CHECK: it's alright
     #[account(
       mut,
-      seeds = [utils::ESCROW_SEED.as_ref()],
+      seeds = [
+        utils::ESCROW_SEED.as_ref(),
+        admin.key().as_ref(),
+      ],
       bump,
     )]
     pub escrow: UncheckedAccount<'info>,

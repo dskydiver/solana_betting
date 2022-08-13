@@ -25,15 +25,18 @@ pub struct Bet<'info> {
     pub user_betting: Account<'info, UserBetting>,
 
     #[account(
-    mut,
-    constraint = battle.authority == admin.key()
+      mut,
+      constraint = battle.authority == admin.key()
     )]
-    pub battle: Account<'info, Battle>,
+    pub battle: Box<Account<'info, Battle>>,
 
     /// CHECK: it's alright
     #[account(
       mut,
-      seeds = [utils::ESCROW_SEED.as_ref()],
+      seeds = [
+        utils::ESCROW_SEED.as_ref(),
+        admin.key().as_ref(),
+      ],
       bump,
     )]
     pub escrow: AccountInfo<'info>,

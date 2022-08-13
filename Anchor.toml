@@ -1,14 +1,14 @@
 [features]
 seeds = false
 skip-lint = false
-[programs.localnet]
-betting = "Erk5aovZ7Hd3RCn5XuwvqUfD5LdTKHq14tswLN2wVyuA"
+[programs.devnet]
+betting = "Ch9LB7Yawyz5PJ9A88hzWZV2z87ZjrxAcFjBqeUs28C6"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "./id.json"
 
 [scripts]

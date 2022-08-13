@@ -16,5 +16,8 @@ pub enum ErrorCode {
 
     /// 6003
     #[msg("Battle not finished yet.")]
-    BattleNotFinished
+    BattleNotFinished,
+    /// 6004
+    #[msg("Zero amount.")]
+    ZeroAmount
 }
