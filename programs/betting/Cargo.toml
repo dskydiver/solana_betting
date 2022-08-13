@@ -18,4 +18,3 @@ default = []
 [dependencies]
 anchor-lang = "0.25.0"
 solana-program = "1.9.13"
-getrandom = { version = "0.1.14", features = ["dummy"] }

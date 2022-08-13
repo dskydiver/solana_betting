@@ -8,6 +8,7 @@ use structures::{
     create_battle::*,
     bet::*,
     finalize::*,
+    claim::*,
 };
 use utils::Winner;
 
@@ -29,5 +30,9 @@ pub mod betting {
 
     pub fn finalize(_ctx: Context<Finalize>) -> Result<()> {
         _ctx.accounts.process()
+    }
+
+    pub fn claim(_ctx: Context<Claim>) -> Result<()> {
+        _ctx.accounts.process(*_ctx.bumps.get("escrow").unwrap())
     }
 }

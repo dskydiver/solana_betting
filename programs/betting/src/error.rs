@@ -13,4 +13,8 @@ pub enum ErrorCode {
     /// 6002
     #[msg("Battle finished.")]
     BattleFinished,
+
+    /// 6003
+    #[msg("Battle not finished yet.")]
+    BattleNotFinished
 }

@@ -12,4 +12,5 @@ pub struct Battle {
   pub is_finished: bool,
   pub left_pool: u64,
   pub right_pool: u64,
+  pub admin_claimed: bool,
 }

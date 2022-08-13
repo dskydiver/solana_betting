@@ -97,26 +97,49 @@ describe("betting", () => {
       })
     );
 
-    let [userBettingPDA] = await PublicKey.findProgramAddress(
+    let [userBettingPDA2] = await PublicKey.findProgramAddress(
       [Buffer.from("bet"), signer2.publicKey.toBuffer()],
       program.programId
     );
-    console.log("userBettingPDA = ", userBettingPDA.toBase58());
+    console.log("userBettingPDA2 = ", userBettingPDA2.toBase58());
 
     let left = { left: true };
 
     await provider.connection.confirmTransaction(
-      await program.rpc.bet(left, new BN(1000000000), {
+      await program.rpc.bet(left, new BN(2000000000), {
         accounts: {
           authority: signer2.publicKey,
           admin: signer1.publicKey,
-          userBetting: userBettingPDA,
+          userBetting: userBettingPDA2,
           battle: battlePDA,
           escrow: escrowPDA,
           clockSysvar: SYSVAR_CLOCK_PUBKEY,
           systemProgram: SystemProgram.programId,
         },
         signers: [signer2],
+      })
+    );
+
+    let [userBettingPDA3] = await PublicKey.findProgramAddress(
+      [Buffer.from("bet"), signer3.publicKey.toBuffer()],
+      program.programId
+    );
+    console.log("userBettingPDA3 = ", userBettingPDA3.toBase58());
+
+    let right = { right: true };
+
+    await provider.connection.confirmTransaction(
+      await program.rpc.bet(right, new BN(1000000000), {
+        accounts: {
+          authority: signer3.publicKey,
+          admin: signer1.publicKey,
+          userBetting: userBettingPDA3,
+          battle: battlePDA,
+          escrow: escrowPDA,
+          clockSysvar: SYSVAR_CLOCK_PUBKEY,
+          systemProgram: SystemProgram.programId,
+        },
+        signers: [signer3],
       })
     );
 
@@ -134,5 +157,37 @@ describe("betting", () => {
 
     let battle = await program.account.battle.fetch(battlePDA);
     console.log("battle winner = ", battle.winner);
+
+    await provider.connection.confirmTransaction(
+      await program.rpc.claim({
+        accounts: {
+          authority: signer2.publicKey,
+          admin: signer1.publicKey,
+          userBetting: userBettingPDA2,
+          battle: battlePDA,
+          escrow: escrowPDA,
+          clockSysvar: SYSVAR_CLOCK_PUBKEY,
+          systemProgram: SystemProgram.programId,
+        },
+        signers: [signer2]
+      })
+    );
+
+    console.log("left passed")
+
+    await provider.connection.confirmTransaction(
+      await program.rpc.claim({
+        accounts: {
+          authority: signer3.publicKey,
+          admin: signer1.publicKey,
+          userBetting: userBettingPDA3,
+          battle: battlePDA,
+          escrow: escrowPDA,
+          clockSysvar: SYSVAR_CLOCK_PUBKEY,
+          systemProgram: SystemProgram.programId,
+        },
+        signers: [signer3],
+      })
+    );
   });
 });

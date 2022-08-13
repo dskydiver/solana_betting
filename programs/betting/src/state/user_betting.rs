@@ -9,5 +9,4 @@ pub struct UserBetting {
   pub battle: Pubkey,
   pub chosen: Winner,
   pub amount: u64,
-  pub is_claimed: bool,
 }
